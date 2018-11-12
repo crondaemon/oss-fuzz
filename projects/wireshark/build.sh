@@ -15,6 +15,39 @@
 #
 ################################################################################
 
+
+export FAKEROOT=/
+
+# export LIBFFI_VERSION=3.2.1
+# curl -L -O https://github.com/libffi/libffi/archive/v$LIBFFI_VERSION.tar.gz
+# tar xzf v$LIBFFI_VERSION.tar.gz
+# cd libffi-$LIBFFI_VERSION
+# ./autogen.sh
+# ./configure --enable-static --prefix=$FAKEROOT
+# make -j `nproc`
+# make install
+# cd ..
+
+export LIBGLIB_VERSION=glib-2.58.1
+curl -L -O https://ftp.gnome.org/pub/GNOME/sources/glib/2.58/$LIBGLIB_VERSION.tar.xz
+tar xf $LIBGLIB_VERSION.tar.xz
+cd $LIBGLIB_VERSION
+# export LIBFFI_CFLAGS=-I$FAKEROOT/lib/libffi-$LIBFFI_VERSION/include/
+# export LIBFFI_LIBS="-L$FAKEROOT/lib -lffi"
+./autogen.sh --disable-libmount --enable-shared=no --enable-static --prefix=$FAKEROOT
+make -j `nproc`
+make install
+cd ..
+
+export LIBJSONGLIB_VERSION=json-glib-1.2.6
+curl -L -O https://ftp.gnome.org/pub/GNOME/sources/json-glib/1.2/$LIBJSONGLIB_VERSION.tar.xz
+tar xf $LIBJSONGLIB_VERSION.tar.xz
+cd $LIBJSONGLIB_VERSION
+./configure --enable-static --prefix=$FAKEROOT
+make -j `nproc`
+make install
+cd ..
+
 WIRESHARK_BUILD_PATH="$WORK/build"
 mkdir -p "$WIRESHARK_BUILD_PATH"
 
@@ -38,7 +71,9 @@ CMAKE_DEFINES="$CMAKE_DEFINES -DBUILD_wireshark=OFF"
 
 cd "$WIRESHARK_BUILD_PATH"
 
+rm -rf CMake*
 cmake -GNinja \
+      -DCMAKE_PREFIX_PATH=$FAKEROOT \
       -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
       -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
       -DDISABLE_WERROR=ON -DOSS_FUZZ=ON $CMAKE_DEFINES $SRC/wireshark/
